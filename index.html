@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shubhmovie</title>
+    <style>
+        :root {
+            --primary-color: #00bcd4;
+            --secondary-color: #0097a7;
+            --background-color: #f0f2f5;
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --light-text-color: #757575;
+            --nav-icon-color: #ffffff;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --strong-shadow-color: rgba(0, 0, 0, 0.15);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding-bottom: 70px;
+        }
+
+        /* पेज में टॉप पैडिंग ताकि कंटेंट स्टेटस बार के नीचे न जाए */
+        .page {
+            padding-top: 15px;
+        }
+        
+        .main-content {
+            padding: 0 15px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            overflow-x: auto;
+        }
+
+        .header::-webkit-scrollbar { display: none; }
+
+        .categories {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .category-chip {
+            background-color: var(--card-background);
+            color: var(--primary-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .category-chip:hover {
+             transform: translateY(-2px);
+             box-shadow: 0 4px 8px var(--strong-shadow-color);
+        }
+
+        .category-chip.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+            font-weight: bold;
+        }
+
+        .search-section { padding-bottom: 20px; }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-background);
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 15px;
+            outline: none;
+            box-shadow: 0 2px 5px var(--shadow-color);
+            transition: border-color 0.2s;
+        }
+        
+        .search-bar:focus { border-color: var(--primary-color); }
+
+        .search-button {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            box-shadow: 0 3px 6px var(--strong-shadow-color);
+            transition: all 0.2s;
+        }
+        .search-button:active { 
+            transform: scale(0.95);
+            box-shadow: 0 1px 3px var(--strong-shadow-color);
+        }
+
+        .media-category { 
+            margin-bottom: 25px; 
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .category-title { font-size: 20px; font-weight: bold; }
+
+        .more-button {
+            color: var(--primary-color);
+            font-size: 15px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .media-scroller {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 5px 0 15px 0;
+            min-height: 230px;
+        }
+
+        .media-scroller::-webkit-scrollbar { display: none; }
+
+        .media-card {
+            flex: 0 0 130px;
+            width: 130px;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+            perspective: 1000px;
+        }
+        .media-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px var(--strong-shadow-color);
+        }
+        .media-card:hover .media-poster {
+             transform: rotateY(5deg);
+        }
+
+        .media-poster {
+            width: 100%;
+            aspect-ratio: 9 / 16;
+            background-color: #e0e0e0;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 10px var(--shadow-color);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .media-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 5px;
+        }
+        
+        .separator {
+            border-bottom: 1px solid var(--border-color);
+            margin-top: -5px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: var(--card-background);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 8px var(--shadow-color);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--light-text-color);
+            text-decoration: none;
+            flex-grow: 1;
+            padding: 5px 0;
+            transition: all 0.2s;
+        }
+        
+        .nav-item.active {
+             color: var(--primary-color);
+             transform: translateY(-3px);
+        }
+        .nav-item .icon { font-size: 24px; }
+        .nav-item .label { font-size: 12px; margin-top: 2px; font-weight: 500; }
+
+        .page.active { display: block; }
+        .page { display: none; }
+        
+        .profile-form { max-width: 500px; margin: 20px auto; padding: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--light-text-color);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            box-shadow: 0 1px 3px var(--shadow-color);
+        }
+        .profile-save-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .detail-page-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: var(--card-background);
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+        .back-button {
+            font-size: 24px;
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        .season-buttons { display: flex; gap: 10px; overflow-x: auto; }
+        .season-btn {
+            background-color: var(--card-background);
+            color: var(--primary-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        .season-btn.active { background-color: var(--primary-color); color: white; }
+
+        .parts-list { padding: 20px 15px; }
+        .part-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .part-item:hover { background-color: #f1f1f1; transform: translateX(5px); }
+        .part-poster {
+            width: 100px;
+            height: 75px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+            background-color: #e0e0e0;
+        }
+        .part-title { font-size: 16px; font-weight: 500; }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .empty-message {
+            text-align: center;
+            color: var(--light-text-color);
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+        
+        /* --- नई स्टाइल: यूज़र इन्फॉर्मेशन मॉडल के लिए --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            display: none; /* डिफ़ॉल्ट रूप से छिपा हुआ */
+        }
+        .modal-content {
+            background: white;
+            padding: 25px 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-content h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--text-color);
+        }
+        .modal-save-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            margin-top: 10px;
+        }
+    </style>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+
+    <!-- ########## नई यूज़र इन्फॉर्मेशन मॉडल ########## -->
+    <div id="userInfoModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Welcome!</h2>
+            <div class="form-group">
+                <label for="modalUserName">User Name</label>
+                <input type="text" id="modalUserName" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label for="modalMobileNo">Mobile No.</label>
+                <input type="tel" id="modalMobileNo" placeholder="Enter your mobile number">
+            </div>
+            <div class="form-group">
+                <label for="modalUserEmail">Email</label>
+                <input type="email" id="modalUserEmail" placeholder="Enter your email">
+            </div>
+            <button id="saveUserInfoBtn" class="modal-save-btn">Save & Continue</button>
+        </div>
+    </div>
+    
+    <div id="appContainer">
+        <!-- ########## मूवी पेज ########## -->
+        <div id="moviePage" class="page active">
+            <div class="main-content">
+                <div class="header">
+                    <div class="categories">
+                        <div class="category-chip active" data-category="Hollywood">Hollywood</div>
+                        <div class="category-chip" data-category="Bollywood">Bollywood</div>
+                        <div class="category-chip" data-category="Tollywood">Tollywood</div>
+                        <div class="category-chip" data-category="Kollywood">Kollywood</div>
+                        <div class="category-chip" data-category="Korean">Korean</div>
+                        <div class="category-chip" data-category="Nollywood">Nollywood</div>
+                        <div class="category-chip" data-category="Pollywood">Pollywood</div>
+                    </div>
+                </div>
+                <div class="search-section">
+                    <div class="search-container">
+                        <input type="text" class="search-bar" placeholder="Search Movies...">
+                        <button class="search-button"><i class='bx bx-search'></i></button>
+                    </div>
+                </div>
+                <div id="movie-categories-container"></div>
+            </div>
+        </div>
+
+        <!-- ########## वेबसीरीज़ पेज ########## -->
+        <div id="webseriesPage" class="page">
+            <div class="main-content">
+                <div class="header">
+                    <div class="categories">
+                        <div class="category-chip active" data-category="Originals">Originals</div>
+                        <div class="category-chip" data-category="Trending">Trending</div>
+                        <div class="category-chip" data-category="Drama">Drama</div>
+                        <div class="category-chip" data-category="Crime">Crime</div>
+                        <div class="category-chip" data-category="Fantasy">Fantasy</div>
+                    </div>
+                </div>
+                <div class="search-section">
+                    <div class="search-container">
+                        <input type="text" class="search-bar" placeholder="Search Webseries...">
+                        <button class="search-button"><i class='bx bx-search'></i></button>
+                    </div>
+                </div>
+                <div id="webseries-categories-container"></div>
+            </div>
+        </div>
+
+        <!-- ########## कार्टून पेज ########## -->
+        <div id="cartoonPage" class="page">
+            <div class="main-content">
+                <div class="header">
+                    <div class="categories">
+                        <div class="category-chip active" data-category="For Kids">For Kids</div>
+                        <div class="category-chip" data-category="Anime">Anime</div>
+                        <div class="category-chip" data-category="Classic">Classic</div>
+                        <div class="category-chip" data-category="Adventure">Adventure</div>
+                        <div class="category-chip" data-category="Educational">Educational</div>
+                    </div>
+                </div>
+                <div class="search-section">
+                    <div class="search-container">
+                        <input type="text" class="search-bar" placeholder="Search Cartoons...">
+                        <button class="search-button"><i class='bx bx-search'></i></button>
+                    </div>
+                </div>
+                <div id="cartoon-categories-container"></div>
+            </div>
+        </div>
+
+        <!-- ########## प्रोफाइल पेज ########## -->
+        <div id="profilePage" class="page">
+            <div class="profile-form">
+                <h2 style="text-align: center; margin-bottom: 30px;">Edit Profile</h2>
+                <div class="form-group"><label for="userName">User Name</label><input type="text" id="userName" placeholder="Enter your name"></div>
+                <div class="form-group"><label for="mobileNo">Mobile No.</label><input type="tel" id="mobileNo" placeholder="Enter your mobile number"></div>
+                <div class="form-group"><label for="userEmail">Email</label><input type="email" id="userEmail" placeholder="Enter your email"></div>
+                <button class="profile-save-btn">Save Changes</button>
+            </div>
+        </div>
+    
+        <!-- नीचे का नेविगेशन बार -->
+        <nav class="bottom-nav">
+            <a href="#movie" class="nav-item active" data-page="moviePage"><i class='bx bxs-movie-play icon'></i><span class="label">Movie</span></a>
+            <a href="#webseries" class="nav-item" data-page="webseriesPage"><i class='bx bx-tv icon'></i><span class="label">Webseries</span></a>
+            <a href="#cartoon" class="nav-item" data-page="cartoonPage"><i class='bx bxs-smile icon'></i><span class="label">Cartoon</span></a>
+            <a href="#profile" class="nav-item" data-page="profilePage"><i class='bx bxs-user-circle icon'></i><span class="label">Profile</span></a>
+        </nav>
+    </div>
+
+    <!-- ########## डिटेल पेज ########## -->
+    <div id="detailPage" class="page">
+        <div class="detail-page-header">
+            <div class="back-button"><i class='bx bx-arrow-back'></i></div>
+            <div class="season-buttons"></div>
+        </div>
+        <div class="parts-list"></div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+        // --- Firestore के लिए नया इम्पोर्ट ---
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuKKz3mlBT8upMd6GZswa7iUB58ZyndGk",
+            authDomain: "shubhmovie-b847e.firebaseapp.com",
+            databaseURL: "https://shubhmovie-b847e-default-rtdb.firebaseio.com",
+            projectId: "shubhmovie-b847e",
+            storageBucket: "shubhmovie-b847e.firebasestorage.app",
+            messagingSenderId: "598445393451",
+            appId: "1:598445393451:web:10be4ecd34d1882a7e0c6e",
+            measurementId: "G-4PMYYN12SF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        // --- Firestore को इनिशियलाइज़ करें ---
+        const firestore = getFirestore(app);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const pages = document.querySelectorAll('.page');
+            const navItems = document.querySelectorAll('.nav-item');
+            const appContainer = document.getElementById('appContainer');
+            const detailPage = document.getElementById('detailPage');
+
+            // --- नई मॉडल के लिए वेरिएबल्स ---
+            const userInfoModal = document.getElementById('userInfoModal');
+            const saveUserInfoBtn = document.getElementById('saveUserInfoBtn');
+
+            let allMoviesData = null;
+            let allWebseriesData = null;
+            let allCartoonsData = null;
+
+            // --- नया फंक्शन: पहली बार आने वाले यूज़र को चेक करना ---
+            const checkFirstTimeUser = () => {
+                const isInfoSaved = localStorage.getItem('shubhmovie_userInfoSaved');
+                if (!isInfoSaved) {
+                    userInfoModal.style.display = 'flex';
+                }
+            };
+
+            // --- नया फंक्शन: यूज़र की जानकारी Firestore में सेव करना ---
+            saveUserInfoBtn.addEventListener('click', async () => {
+                const userName = document.getElementById('modalUserName').value.trim();
+                const mobileNo = document.getElementById('modalMobileNo').value.trim();
+                const userEmail = document.getElementById('modalUserEmail').value.trim();
+
+                if (!userName || !mobileNo || !userEmail) {
+                    alert('Please fill all the details.');
+                    return;
+                }
+
+                saveUserInfoBtn.textContent = 'Saving...';
+                saveUserInfoBtn.disabled = true;
+
+                try {
+                    // मोबाइल नंबर को डॉक्यूमेंट ID के रूप में उपयोग करें
+                    const userDocRef = doc(firestore, 'users', mobileNo); 
+                    await setDoc(userDocRef, {
+                        name: userName,
+                        mobile: mobileNo,
+                        email: userEmail,
+                        createdAt: new Date()
+                    });
+                    
+                    localStorage.setItem('shubhmovie_userInfoSaved', 'true');
+                    userInfoModal.style.display = 'none';
+
+                } catch (error) {
+                    console.error("Error writing document to Firestore: ", error);
+                    alert('Failed to save details. Please try again.');
+                } finally {
+                    saveUserInfoBtn.textContent = 'Save & Continue';
+                    saveUserInfoBtn.disabled = false;
+                }
+            });
+
+            const movieVerticalCategoriesOrder = [
+                "Romantic Drama", "Action & Adventure", "Sci-Fi", "Superhero / Comic Book", 
+                "Horror / Supernatural", "Fantasy / Mythology", "Thriller / Mystery", 
+                "Comedy / Dark Comedy", "Biopic / Historical Drama", "Animated / Anime"
+            ];
+
+            const renderMediaSection = (container, title, items, mediaType, originalCategory) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'media-category';
+
+                categoryDiv.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-title">${title}</div>
+                        <a class="more-button">More</a>
+                    </div>
+                    <div class="media-scroller"></div>
+                    <div class="separator"></div>
+                `;
+                
+                const scroller = categoryDiv.querySelector('.media-scroller');
+                for (const id in items) {
+                    const item = items[id];
+                    if (item && item.posterUrl) {
+                        const card = document.createElement('div');
+                        card.className = 'media-card';
+                        card.dataset.type = mediaType;
+                        card.dataset.id = id;
+                        card.dataset.link = item.megaLink || '';
+                        card.dataset.title = item.title;
+                        if (mediaType !== 'movies') {
+                           card.dataset.originalCategory = originalCategory;
+                        }
+
+                        card.innerHTML = `
+                            <img src="${item.posterUrl}" alt="Poster" class="media-poster">
+                            <div class="media-title">${item.title}</div>
+                        `;
+                        scroller.appendChild(card);
+                    }
+                }
+                container.appendChild(categoryDiv);
+            };
+
+            const displayContentForCategory = (pageId, selectedCategory) => {
+                const container = document.getElementById(`${pageId}-categories-container`);
+                container.innerHTML = '';
+                let dataToShow = null;
+                let mediaType = '';
+                let allData = null;
+
+                if (pageId === 'movie') {
+                    mediaType = 'movies';
+                    allData = allMoviesData;
+                    dataToShow = allData ? allData[selectedCategory] : null;
+
+                    if (dataToShow) {
+                        const groupedByGenre = {};
+                        for (const movieId in dataToShow) {
+                            const movie = dataToShow[movieId];
+                            const genre = movie.genre || 'Uncategorized';
+                            if (!groupedByGenre[genre]) {
+                                groupedByGenre[genre] = {};
+                            }
+                            groupedByGenre[genre][movieId] = movie;
+                        }
+                        
+                        movieVerticalCategoriesOrder.forEach(genre => {
+                            if (groupedByGenre[genre]) {
+                                renderMediaSection(container, genre, groupedByGenre[genre], mediaType);
+                            }
+                        });
+                        for (const genre in groupedByGenre) {
+                            if (!movieVerticalCategoriesOrder.includes(genre)) {
+                                renderMediaSection(container, genre, groupedByGenre[genre], mediaType);
+                            }
+                        }
+
+                    }
+                } else {
+                    mediaType = pageId === 'webseries' ? 'webseries' : 'cartoons';
+                    allData = pageId === 'webseries' ? allWebseriesData : allCartoonsData;
+                    dataToShow = allData ? allData[selectedCategory] : null;
+                    if (dataToShow) {
+                       renderMediaSection(container, selectedCategory, dataToShow, mediaType, selectedCategory);
+                    }
+                }
+                
+                if (container.innerHTML === '') {
+                    container.innerHTML = `<div class="empty-message">No content found in '${selectedCategory}'.</div>`;
+                }
+
+                addMediaCardListeners();
+                addMoreButtonListeners();
+            };
+
+            const loadInitialData = (pageId) => {
+                const container = document.getElementById(`${pageId}-categories-container`);
+                const activeChip = document.querySelector(`#${pageId}Page .category-chip.active`);
+                const selectedCategory = activeChip ? activeChip.dataset.category : null;
+
+                let dataVar, path;
+                if (pageId === 'movie') { dataVar = allMoviesData; path = 'movies'; } 
+                else if (pageId === 'webseries') { dataVar = allWebseriesData; path = 'webseries'; }
+                else { dataVar = allCartoonsData; path = 'cartoons'; }
+
+                if (dataVar) { 
+                    displayContentForCategory(pageId, selectedCategory);
+                } else { 
+                    container.innerHTML = '<div class="loading-spinner"></div>';
+                    onValue(ref(database, path), (snapshot) => {
+                        const data = snapshot.val();
+                        if (pageId === 'movie') allMoviesData = data;
+                        else if (pageId === 'webseries') allWebseriesData = data;
+                        else allCartoonsData = data;
+                        
+                        displayContentForCategory(pageId, selectedCategory);
+                    }, (error) => {
+                        console.error("Firebase Error:", error);
+                        container.innerHTML = `<div class="empty-message">Failed to load data.</div>`;
+                    });
+                }
+            };
+
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageId = this.dataset.page;
+                    
+                    appContainer.style.display = 'block';
+                    detailPage.classList.remove('active');
+
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    pages.forEach(p => p.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById(pageId).classList.add('active');
+                    window.scrollTo(0, 0);
+
+                    loadInitialData(pageId.replace('Page', ''));
+                });
+            });
+
+            document.querySelectorAll('.categories').forEach(catContainer => {
+                catContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('category-chip')) {
+                        const pageId = e.target.closest('.page').id.replace('Page', '');
+                        catContainer.querySelector('.active').classList.remove('active');
+                        e.target.classList.add('active');
+                        displayContentForCategory(pageId, e.target.dataset.category);
+                    }
+                });
+            });
+            
+            function addMediaCardListeners() {
+                document.querySelectorAll('.media-card').forEach(card => {
+                    card.addEventListener('click', async function() {
+                        const type = this.dataset.type;
+                        if (type === 'movies') {
+                            const link = this.dataset.link;
+                            if (link) window.open(link, '_blank');
+                        } else {
+                            const id = this.dataset.id;
+                            const originalCategory = this.dataset.originalCategory;
+                            const path = `${type}/${originalCategory}/${id}`;
+                            try {
+                                const snapshot = await get(ref(database, path));
+                                if (snapshot.exists()) {
+                                    showDetailPage(snapshot.val());
+                                } else {
+                                    alert("Details not found for this item.");
+                                }
+                            } catch (error) {
+                                console.error("Firebase get error:", error);
+                                alert("Error fetching details.");
+                            }
+                        }
+                    });
+                });
+            }
+
+            function addMoreButtonListeners() {
+                // Future implementation
+            }
+            
+            const backButton = detailPage.querySelector('.back-button');
+            backButton.addEventListener('click', () => {
+                detailPage.classList.remove('active');
+                appContainer.style.display = 'block';
+            });
+            
+            function showDetailPage(data) {
+                appContainer.style.display = 'none';
+                detailPage.classList.add('active');
+                window.scrollTo(0, 0);
+                
+                const seasonButtonsContainer = detailPage.querySelector('.season-buttons');
+                seasonButtonsContainer.innerHTML = '';
+
+                const seasons = data.seasons;
+                if (seasons) {
+                    const seasonKeys = Object.keys(seasons).sort((a,b) => a - b);
+                    seasonKeys.forEach((seasonNum, index) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'season-btn';
+                        btn.textContent = `Season ${seasonNum}`;
+                        btn.dataset.season = seasonNum;
+                        if (index === 0) btn.classList.add('active');
+                        seasonButtonsContainer.appendChild(btn);
+                    });
+
+                    if (seasonKeys.length > 0) loadParts(seasons[seasonKeys[0]]);
+
+                    seasonButtonsContainer.querySelectorAll('.season-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            seasonButtonsContainer.querySelector('.active').classList.remove('active');
+                            this.classList.add('active');
+                            loadParts(seasons[this.dataset.season]);
+                        });
+                    });
+                } else {
+                    detailPage.querySelector('.parts-list').innerHTML = `<div class="empty-message">No seasons found.</div>`;
+                }
+            }
+
+            function loadParts(parts) {
+                const partsListContainer = detailPage.querySelector('.parts-list');
+                partsListContainer.innerHTML = '';
+                if (parts) {
+                    for (const partId in parts) {
+                        const part = parts[partId];
+                        const item = document.createElement('div');
+                        item.className = 'part-item';
+                        item.innerHTML = `
+                           <img src="${part.posterUrl || 'https://via.placeholder.com/200x150'}" class="part-poster">
+                           <div class="part-title">${part.partName}</div>
+                        `;
+                        item.addEventListener('click', () => {
+                            if (part.megaLink) window.open(part.megaLink, '_blank');
+                        });
+                        partsListContainer.appendChild(item);
+                    }
+                } else {
+                     partsListContainer.innerHTML = `<div class="empty-message">No episodes found for this season.</div>`;
+                }
+            }
+            
+            document.querySelectorAll('.search-button').forEach(searchButton => {
+                const searchBar = searchButton.previousElementSibling;
+                const page = searchButton.closest('.page');
+                const container = page.querySelector('[id$="-categories-container"]');
+
+                const performSearch = () => {
+                    const searchTerm = searchBar.value.toLowerCase().trim();
+                    const allCards = container.querySelectorAll('.media-card');
+                    
+                    if (searchTerm === '') {
+                        const activeChip = page.querySelector('.category-chip.active');
+                        if (activeChip) {
+                            displayContentForCategory(page.id.replace('Page', ''), activeChip.dataset.category);
+                        }
+                        return;
+                    }
+
+                    container.innerHTML = '';
+                    const resultsContainer = document.createElement('div');
+                    resultsContainer.className = 'media-scroller';
+                    resultsContainer.style.flexWrap = 'wrap';
+                    resultsContainer.style.justifyContent = 'flex-start';
+
+                    let found = false;
+                    let allData = null;
+                    const pageId = page.id.replace('Page', '');
+                    
+                    if (pageId === 'movie') allData = allMoviesData;
+                    else if (pageId === 'webseries') allData = allWebseriesData;
+                    else allData = allCartoonsData;
+
+                    if (allData) {
+                        for(const category in allData){
+                            const items = allData[category];
+                            for (const id in items){
+                                const item = items[id];
+                                if(item.title && item.title.toLowerCase().includes(searchTerm)){
+                                     const card = document.createElement('div');
+                                        card.className = 'media-card';
+                                        card.dataset.type = pageId === 'movie' ? 'movies' : (pageId === 'webseries' ? 'webseries' : 'cartoons');
+                                        card.dataset.id = id;
+                                        card.dataset.link = item.megaLink || '';
+                                        card.dataset.title = item.title;
+                                        if (pageId !== 'movie') {
+                                           card.dataset.originalCategory = category;
+                                        }
+
+                                        card.innerHTML = `
+                                            <img src="${item.posterUrl}" alt="Poster" class="media-poster">
+                                            <div class="media-title">${item.title}</div>
+                                        `;
+                                    resultsContainer.appendChild(card);
+                                    found = true;
+                                }
+                            }
+                        }
+                    }
+
+                    if (found) {
+                        container.appendChild(resultsContainer);
+                        addMediaCardListeners();
+                    } else {
+                        container.innerHTML = `<div class="empty-message">No results found for "${searchBar.value}"</div>`;
+                    }
+                };
+                
+                searchBar.addEventListener('keyup', (event) => {
+                    if (event.key === 'Enter') performSearch();
+                });
+                searchButton.addEventListener('click', performSearch);
+            });
+
+            // --- शुरुआती लोड ---
+            checkFirstTimeUser(); // सबसे पहले यूज़र को चेक करें
+            loadInitialData('movie');
+
+        });
+    </script>
+</body>
+</html>
