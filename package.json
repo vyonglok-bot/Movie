@@ -1,0 +1,12 @@
+{
+  "name": "movie-app-static-server",
+  "version": "1.0.0",
+  "description": "A simple server to run a static HTML site on Render.",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve ."
+  },
+  "dependencies": {
+    "serve": "^14.2.3"
+  }
+}
