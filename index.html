@@ -89,30 +89,6 @@
         .loading-spinner { border: 5px solid #f3f3f3; border-top: 5px solid var(--primary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .empty-message { text-align: center; color: var(--light-text-color); padding: 40px 20px; font-size: 16px; }
-
-        /* --- NEW SERVER SELECTION MODAL STYLES --- */
-        .server-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center;
-            align-items: center; z-index: 2000;
-        }
-        .server-modal-content {
-            background: var(--card-background); padding: 20px; border-radius: 12px;
-            width: 90%; max-width: 350px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s;
-        }
-        .server-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .server-modal-header h3 { margin: 0; font-size: 18px; }
-        .server-modal-close { font-size: 24px; cursor: pointer; font-weight: bold; }
-        .server-modal-body { display: flex; flex-direction: column; gap: 10px; }
-        .server-btn {
-            background-color: var(--primary-color); color: white; border: none;
-            padding: 12px; border-radius: 8px; font-size: 16px;
-            font-weight: bold; cursor: pointer; text-align: center;
-            transition: background-color 0.2s;
-        }
-        .server-btn:hover { background-color: var(--secondary-color); }
-
     </style>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
@@ -315,69 +291,28 @@
                     card.dataset.fromFirestore = item.fromFirestore || false;
                     if (item.megaLink) card.dataset.link = item.megaLink;
                     if (item.tmdbId) card.dataset.tmdbId = item.tmdbId;
-                    if (item.title) card.dataset.title = item.title;
                     card.innerHTML = `<img src="${item.posterUrl}" alt="Poster" class="media-poster"><div class="media-title">${item.title}</div>`;
                     scroller.appendChild(card);
                 });
                 container.appendChild(categoryDiv);
             }
 
-            // ########## NEW AND IMPROVED CODE STARTS HERE ##########
-            function showServerSelectionModal(tmdbId, type, title) {
-                // Remove any existing modal first
-                const existingModal = document.querySelector('.server-modal-overlay');
-                if (existingModal) existingModal.remove();
-
-                const urlType = type === 'movies' ? 'movie' : 'tv';
-                const servers = [
-                    { name: "Server 1 (VidSrc)", url: `https://vidsrc.pro/embed/${urlType}/${tmdbId}` },
-                    { name: "Server 2 (2Embed)", url: `https://www.2embed.to/embed/tmdb/${urlType}?id=${tmdbId}` },
-                    { name: "Server 3 (MultiEmbed)", url: `https://multiembed.mov/?video_id=${tmdbId}` }
-                ];
-
-                const modalOverlay = document.createElement('div');
-                modalOverlay.className = 'server-modal-overlay';
-                
-                const modalContent = document.createElement('div');
-                modalContent.className = 'server-modal-content';
-
-                modalContent.innerHTML = `
-                    <div class="server-modal-header">
-                        <h3>Choose a Server for ${title}</h3>
-                        <span class="server-modal-close">&times;</span>
-                    </div>
-                    <div class="server-modal-body"></div>
-                `;
-
-                const modalBody = modalContent.querySelector('.server-modal-body');
-                servers.forEach(server => {
-                    const serverBtn = document.createElement('button');
-                    serverBtn.className = 'server-btn';
-                    serverBtn.textContent = server.name;
-                    serverBtn.onclick = () => window.open(server.url, '_blank');
-                    modalBody.appendChild(serverBtn);
-                });
-
-                modalOverlay.appendChild(modalContent);
-                document.body.appendChild(modalOverlay);
-
-                const closeModal = () => modalOverlay.remove();
-                modalContent.querySelector('.server-modal-close').onclick = closeModal;
-                modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
-            }
-
             function addMediaCardListeners() {
                 document.querySelectorAll('.media-card').forEach(card => {
                     card.addEventListener('click', async function() {
-                        const type = this.dataset.type; const id = this.dataset.id;
+                        const type = this.dataset.type;
+                        const id = this.dataset.id;
                         const fromFirestore = this.dataset.fromFirestore === 'true';
-                        const megaLink = this.dataset.link; const tmdbId = this.dataset.tmdbId;
-                        const title = this.dataset.title;
+                        const megaLink = this.dataset.link;
+                        const tmdbId = this.dataset.tmdbId;
 
                         if (megaLink) {
                             window.open(megaLink, '_blank');
                         } else if (tmdbId) {
-                            showServerSelectionModal(tmdbId, type, title); // <-- THIS IS THE NEW LOGIC
+                            const urlType = type === 'movies' ? 'movie' : 'tv';
+                            // ########## YEH FINAL AUR WORKING SERVER LINK HAI ##########
+                            window.open(`https://moviesapi.club/${urlType}/${tmdbId}`, '_blank');
+                            // #########################################################
                         } else if (fromFirestore) {
                              try {
                                 const docRef = doc(firestore, type, id);
@@ -388,7 +323,6 @@
                     });
                 });
             }
-            // ########## NEW AND IMPROVED CODE ENDS HERE ##########
             
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
