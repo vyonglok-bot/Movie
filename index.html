@@ -406,6 +406,8 @@
                         <div class="category-chip" data-category="Bollywood">Bollywood</div>
                         <div class="category-chip" data-category="Tollywood">Tollywood</div>
                         <div class="category-chip" data-category="Kollywood">Kollywood</div>
+                        <!-- नई मराठी श्रेणी -->
+                        <div class="category-chip" data-category="Marathi">Marathi</div>
                         <div class="category-chip" data-category="Korean">Korean</div>
                         <div class="category-chip" data-category="Nollywood">Nollywood</div>
                         <div class="category-chip" data-category="Pollywood">Pollywood</div>
@@ -496,9 +498,8 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
-        // --- Firestore के लिए नया इम्पोर्ट ---
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        // --- Firestore के लिए इम्पोर्ट ---
+        import { getFirestore, doc, setDoc, collection, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDuKKz3mlBT8upMd6GZswa7iUB58ZyndGk",
@@ -512,7 +513,6 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
         // --- Firestore को इनिशियलाइज़ करें ---
         const firestore = getFirestore(app);
 
@@ -580,7 +580,7 @@
                 "Comedy / Dark Comedy", "Biopic / Historical Drama", "Animated / Anime"
             ];
 
-            const renderMediaSection = (container, title, items, mediaType, originalCategory) => {
+            const renderMediaSection = (container, title, items, mediaType) => {
                 const categoryDiv = document.createElement('div');
                 categoryDiv.className = 'media-category';
 
@@ -594,18 +594,15 @@
                 `;
                 
                 const scroller = categoryDiv.querySelector('.media-scroller');
-                for (const id in items) {
-                    const item = items[id];
-                    if (item && item.posterUrl) {
+                for (const item of items) {
+                     if (item && item.posterUrl) {
                         const card = document.createElement('div');
                         card.className = 'media-card';
                         card.dataset.type = mediaType;
-                        card.dataset.id = id;
+                        card.dataset.id = item.id; 
                         card.dataset.link = item.megaLink || '';
                         card.dataset.title = item.title;
-                        if (mediaType !== 'movies') {
-                           card.dataset.originalCategory = originalCategory;
-                        }
+                        card.dataset.tmdbId = item.tmdbId || ''; // TMDB ID for VidSrc
 
                         card.innerHTML = `
                             <img src="${item.posterUrl}" alt="Poster" class="media-poster">
@@ -627,37 +624,35 @@
                 if (pageId === 'movie') {
                     mediaType = 'movies';
                     allData = allMoviesData;
-                    dataToShow = allData ? allData[selectedCategory] : null;
-
-                    if (dataToShow) {
-                        const groupedByGenre = {};
-                        for (const movieId in dataToShow) {
-                            const movie = dataToShow[movieId];
-                            const genre = movie.genre || 'Uncategorized';
-                            if (!groupedByGenre[genre]) {
-                                groupedByGenre[genre] = {};
-                            }
-                            groupedByGenre[genre][movieId] = movie;
-                        }
-                        
-                        movieVerticalCategoriesOrder.forEach(genre => {
-                            if (groupedByGenre[genre]) {
-                                renderMediaSection(container, genre, groupedByGenre[genre], mediaType);
-                            }
-                        });
-                        for (const genre in groupedByGenre) {
-                            if (!movieVerticalCategoriesOrder.includes(genre)) {
-                                renderMediaSection(container, genre, groupedByGenre[genre], mediaType);
-                            }
-                        }
-
-                    }
+                } else if (pageId === 'webseries') {
+                    mediaType = 'webseries';
+                    allData = allWebseriesData;
                 } else {
-                    mediaType = pageId === 'webseries' ? 'webseries' : 'cartoons';
-                    allData = pageId === 'webseries' ? allWebseriesData : allCartoonsData;
-                    dataToShow = allData ? allData[selectedCategory] : null;
-                    if (dataToShow) {
-                       renderMediaSection(container, selectedCategory, dataToShow, mediaType, selectedCategory);
+                    mediaType = 'cartoons';
+                    allData = allCartoonsData;
+                }
+
+                if (allData && allData[selectedCategory]) {
+                    dataToShow = allData[selectedCategory];
+
+                    const groupedByGenre = {};
+                    for (const item of dataToShow) {
+                        const genre = item.genre || 'Uncategorized';
+                        if (!groupedByGenre[genre]) {
+                            groupedByGenre[genre] = [];
+                        }
+                        groupedByGenre[genre].push(item);
+                    }
+
+                    movieVerticalCategoriesOrder.forEach(genre => {
+                        if (groupedByGenre[genre]) {
+                            renderMediaSection(container, genre, groupedByGenre[genre], mediaType);
+                        }
+                    });
+                    for (const genre in groupedByGenre) {
+                        if (!movieVerticalCategoriesOrder.includes(genre)) {
+                           renderMediaSection(container, genre, groupedByGenre[genre], mediaType);
+                        }
                     }
                 }
                 
@@ -669,34 +664,47 @@
                 addMoreButtonListeners();
             };
 
-            const loadInitialData = (pageId) => {
+            const loadInitialData = async (pageId) => {
                 const container = document.getElementById(`${pageId}-categories-container`);
                 const activeChip = document.querySelector(`#${pageId}Page .category-chip.active`);
                 const selectedCategory = activeChip ? activeChip.dataset.category : null;
 
-                let dataVar, path;
-                if (pageId === 'movie') { dataVar = allMoviesData; path = 'movies'; } 
-                else if (pageId === 'webseries') { dataVar = allWebseriesData; path = 'webseries'; }
-                else { dataVar = allCartoonsData; path = 'cartoons'; }
+                let dataVar, collectionName;
+                if (pageId === 'movie') { dataVar = allMoviesData; collectionName = 'movies'; } 
+                else if (pageId === 'webseries') { dataVar = allWebseriesData; collectionName = 'webseries'; }
+                else { dataVar = allCartoonsData; collectionName = 'cartoons'; }
 
                 if (dataVar) { 
                     displayContentForCategory(pageId, selectedCategory);
                 } else { 
                     container.innerHTML = '<div class="loading-spinner"></div>';
-                    onValue(ref(database, path), (snapshot) => {
-                        const data = snapshot.val();
+                    try {
+                        const querySnapshot = await getDocs(collection(firestore, collectionName));
+                        const data = {};
+                        querySnapshot.forEach((doc) => {
+                            const docData = doc.data();
+                            const category = docData.category || 'Uncategorized';
+                            if (!data[category]) {
+                                data[category] = [];
+                            }
+                            // Firestore से Poster URL प्राप्त करें या एक डिफ़ॉल्ट प्रदान करें
+                            const posterUrl = docData.posterUrl || `https://image.tmdb.org/t/p/w500${docData.poster_path}`;
+
+                            data[category].push({ id: doc.id, ...docData, posterUrl });
+                        });
+
                         if (pageId === 'movie') allMoviesData = data;
                         else if (pageId === 'webseries') allWebseriesData = data;
                         else allCartoonsData = data;
                         
                         displayContentForCategory(pageId, selectedCategory);
-                    }, (error) => {
-                        console.error("Firebase Error:", error);
-                        container.innerHTML = `<div class="empty-message">Failed to load data.</div>`;
-                    });
+                    } catch (error) {
+                        console.error("Firestore Error:", error);
+                        container.innerHTML = `<div class="empty-message">Failed to load data. Please check your Firestore rules.</div>`;
+                    }
                 }
             };
-
+            
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -731,28 +739,36 @@
                 document.querySelectorAll('.media-card').forEach(card => {
                     card.addEventListener('click', async function() {
                         const type = this.dataset.type;
-                        if (type === 'movies') {
-                            const link = this.dataset.link;
-                            if (link) window.open(link, '_blank');
-                        } else {
-                            const id = this.dataset.id;
-                            const originalCategory = this.dataset.originalCategory;
-                            const path = `${type}/${originalCategory}/${id}`;
-                            try {
-                                const snapshot = await get(ref(database, path));
-                                if (snapshot.exists()) {
-                                    showDetailPage(snapshot.val());
+                        const link = this.dataset.link;
+                        const tmdbId = this.dataset.tmdbId;
+                        const id = this.dataset.id;
+                        
+                        if (link) { // Admin Panel से Mega Link है
+                            window.open(link, '_blank');
+                        } else if (type === 'movies' && tmdbId) { // VidSrc से मूवी चलाएं
+                            window.open(`https://vidsrc.to/embed/movie/${tmdbId}`, '_blank');
+                        } else if (type === 'webseries' && tmdbId) { // VidSrc से वेबसीरीज़ चलाएं
+                            window.open(`https://vidsrc.to/embed/tv/${tmdbId}`, '_blank');
+                        }
+                        else { // विवरण पेज दिखाएं
+                             try {
+                                const docRef = doc(firestore, type, id);
+                                const docSnap = await getDoc(docRef);
+
+                                if (docSnap.exists()) {
+                                    showDetailPage(docSnap.data());
                                 } else {
                                     alert("Details not found for this item.");
                                 }
                             } catch (error) {
-                                console.error("Firebase get error:", error);
+                                console.error("Firestore get error:", error);
                                 alert("Error fetching details.");
                             }
                         }
                     });
                 });
             }
+
 
             function addMoreButtonListeners() {
                 // Future implementation
@@ -853,19 +869,15 @@
 
                     if (allData) {
                         for(const category in allData){
-                            const items = allData[category];
-                            for (const id in items){
-                                const item = items[id];
+                           allData[category].forEach(item => {
                                 if(item.title && item.title.toLowerCase().includes(searchTerm)){
                                      const card = document.createElement('div');
                                         card.className = 'media-card';
-                                        card.dataset.type = pageId === 'movie' ? 'movies' : (pageId === 'webseries' ? 'webseries' : 'cartoons');
-                                        card.dataset.id = id;
+                                        card.dataset.type = pageId;
+                                        card.dataset.id = item.id;
                                         card.dataset.link = item.megaLink || '';
                                         card.dataset.title = item.title;
-                                        if (pageId !== 'movie') {
-                                           card.dataset.originalCategory = category;
-                                        }
+                                        card.dataset.tmdbId = item.tmdbId || '';
 
                                         card.innerHTML = `
                                             <img src="${item.posterUrl}" alt="Poster" class="media-poster">
@@ -874,7 +886,7 @@
                                     resultsContainer.appendChild(card);
                                     found = true;
                                 }
-                            }
+                            });
                         }
                     }
 
