@@ -330,7 +330,6 @@
             font-size: 16px;
         }
         
-        /* --- नई स्टाइल: यूज़र इन्फॉर्मेशन मॉडल के लिए --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -342,7 +341,7 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            display: none; /* डिफ़ॉल्ट रूप से छिपा हुआ */
+            display: none;
         }
         .modal-content {
             background: white;
@@ -376,7 +375,6 @@
 </head>
 <body>
 
-    <!-- ########## नई यूज़र इन्फॉर्मेशन मॉडल ########## -->
     <div id="userInfoModal" class="modal-overlay">
         <div class="modal-content">
             <h2>Welcome!</h2>
@@ -397,7 +395,6 @@
     </div>
     
     <div id="appContainer">
-        <!-- ########## मूवी पेज ########## -->
         <div id="moviePage" class="page active">
             <div class="main-content">
                 <div class="header">
@@ -406,7 +403,6 @@
                         <div class="category-chip" data-category="Bollywood">Bollywood</div>
                         <div class="category-chip" data-category="Tollywood">Tollywood</div>
                         <div class="category-chip" data-category="Kollywood">Kollywood</div>
-                        <!-- नई मराठी श्रेणी -->
                         <div class="category-chip" data-category="Marathi">Marathi</div>
                         <div class="category-chip" data-category="Korean">Korean</div>
                         <div class="category-chip" data-category="Nollywood">Nollywood</div>
@@ -423,7 +419,6 @@
             </div>
         </div>
 
-        <!-- ########## वेबसीरीज़ पेज ########## -->
         <div id="webseriesPage" class="page">
             <div class="main-content">
                 <div class="header">
@@ -445,7 +440,6 @@
             </div>
         </div>
 
-        <!-- ########## कार्टून पेज ########## -->
         <div id="cartoonPage" class="page">
             <div class="main-content">
                 <div class="header">
@@ -467,7 +461,6 @@
             </div>
         </div>
 
-        <!-- ########## प्रोफाइल पेज ########## -->
         <div id="profilePage" class="page">
             <div class="profile-form">
                 <h2 style="text-align: center; margin-bottom: 30px;">Edit Profile</h2>
@@ -478,7 +471,6 @@
             </div>
         </div>
     
-        <!-- नीचे का नेविगेशन बार -->
         <nav class="bottom-nav">
             <a href="#movie" class="nav-item active" data-page="moviePage"><i class='bx bxs-movie-play icon'></i><span class="label">Movie</span></a>
             <a href="#webseries" class="nav-item" data-page="webseriesPage"><i class='bx bx-tv icon'></i><span class="label">Webseries</span></a>
@@ -487,7 +479,6 @@
         </nav>
     </div>
 
-    <!-- ########## डिटेल पेज ########## -->
     <div id="detailPage" class="page">
         <div class="detail-page-header">
             <div class="back-button"><i class='bx bx-arrow-back'></i></div>
@@ -498,7 +489,6 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        // --- Firestore के लिए इम्पोर्ट ---
         import { getFirestore, doc, setDoc, collection, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -513,7 +503,6 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        // --- Firestore को इनिशियलाइज़ करें ---
         const firestore = getFirestore(app);
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -522,7 +511,6 @@
             const appContainer = document.getElementById('appContainer');
             const detailPage = document.getElementById('detailPage');
 
-            // --- नई मॉडल के लिए वेरिएबल्स ---
             const userInfoModal = document.getElementById('userInfoModal');
             const saveUserInfoBtn = document.getElementById('saveUserInfoBtn');
 
@@ -530,7 +518,6 @@
             let allWebseriesData = null;
             let allCartoonsData = null;
 
-            // --- नया फंक्शन: पहली बार आने वाले यूज़र को चेक करना ---
             const checkFirstTimeUser = () => {
                 const isInfoSaved = localStorage.getItem('shubhmovie_userInfoSaved');
                 if (!isInfoSaved) {
@@ -538,7 +525,6 @@
                 }
             };
 
-            // --- नया फंक्शन: यूज़र की जानकारी Firestore में सेव करना ---
             saveUserInfoBtn.addEventListener('click', async () => {
                 const userName = document.getElementById('modalUserName').value.trim();
                 const mobileNo = document.getElementById('modalMobileNo').value.trim();
@@ -553,7 +539,6 @@
                 saveUserInfoBtn.disabled = true;
 
                 try {
-                    // मोबाइल नंबर को डॉक्यूमेंट ID के रूप में उपयोग करें
                     const userDocRef = doc(firestore, 'users', mobileNo); 
                     await setDoc(userDocRef, {
                         name: userName,
@@ -574,12 +559,6 @@
                 }
             });
 
-            const movieVerticalCategoriesOrder = [
-                "Romantic Drama", "Action & Adventure", "Sci-Fi", "Superhero / Comic Book", 
-                "Horror / Supernatural", "Fantasy / Mythology", "Thriller / Mystery", 
-                "Comedy / Dark Comedy", "Biopic / Historical Drama", "Animated / Anime"
-            ];
-
             const renderMediaSection = (container, title, items, mediaType) => {
                 const categoryDiv = document.createElement('div');
                 categoryDiv.className = 'media-category';
@@ -599,10 +578,11 @@
                         const card = document.createElement('div');
                         card.className = 'media-card';
                         card.dataset.type = mediaType;
-                        card.dataset.id = item.id; 
+                        card.dataset.id = item.id;
+                        card.dataset.category = item.category; // श्रेणी को ट्रैक करने के लिए जोड़ा गया
                         card.dataset.link = item.megaLink || '';
                         card.dataset.title = item.title;
-                        card.dataset.tmdbId = item.tmdbId || ''; // TMDB ID for VidSrc
+                        card.dataset.tmdbId = item.tmdbId || '';
 
                         card.innerHTML = `
                             <img src="${item.posterUrl}" alt="Poster" class="media-poster">
@@ -617,32 +597,32 @@
             const displayContentForCategory = (pageId, selectedCategory) => {
                 const container = document.getElementById(`${pageId}-categories-container`);
                 container.innerHTML = '';
-                let dataToShow = null;
-                let mediaType = '';
+                
                 let allData = null;
+                let mediaType = '';
 
-                if (pageId === 'movie') {
-                    mediaType = 'movies';
-                    allData = allMoviesData;
-                } else if (pageId === 'webseries') {
-                    mediaType = 'webseries';
-                    allData = allWebseriesData;
-                } else {
-                    mediaType = 'cartoons';
-                    allData = allCartoonsData;
-                }
+                if (pageId === 'movie') { mediaType = 'movies'; allData = allMoviesData; } 
+                else if (pageId === 'webseries') { mediaType = 'webseries'; allData = allWebseriesData; }
+                else { mediaType = 'cartoons'; allData = allCartoonsData; }
 
                 if (allData && allData[selectedCategory]) {
-                    dataToShow = allData[selectedCategory];
-
+                    const items = allData[selectedCategory];
                     const groupedByGenre = {};
-                    for (const item of dataToShow) {
+                    
+                    for (const item of items) {
                         const genre = item.genre || 'Uncategorized';
                         if (!groupedByGenre[genre]) {
                             groupedByGenre[genre] = [];
                         }
                         groupedByGenre[genre].push(item);
                     }
+                    
+                    // Genres को एक विशिष्ट क्रम में दिखाएं
+                    const movieVerticalCategoriesOrder = [
+                        "Romantic Drama", "Action & Adventure", "Sci-Fi", "Superhero / Comic Book", 
+                        "Horror / Supernatural", "Fantasy / Mythology", "Thriller / Mystery", 
+                        "Comedy / Dark Comedy", "Biopic / Historical Drama", "Animated / Anime"
+                    ];
 
                     movieVerticalCategoriesOrder.forEach(genre => {
                         if (groupedByGenre[genre]) {
@@ -661,9 +641,9 @@
                 }
 
                 addMediaCardListeners();
-                addMoreButtonListeners();
             };
 
+            // ########## मुख्य डेटा लोडिंग फंक्शन (ठीक किया गया) ##########
             const loadInitialData = async (pageId) => {
                 const container = document.getElementById(`${pageId}-categories-container`);
                 const activeChip = document.querySelector(`#${pageId}Page .category-chip.active`);
@@ -676,32 +656,39 @@
 
                 if (dataVar) { 
                     displayContentForCategory(pageId, selectedCategory);
-                } else { 
-                    container.innerHTML = '<div class="loading-spinner"></div>';
-                    try {
-                        const querySnapshot = await getDocs(collection(firestore, collectionName));
-                        const data = {};
-                        querySnapshot.forEach((doc) => {
-                            const docData = doc.data();
-                            const category = docData.category || 'Uncategorized';
-                            if (!data[category]) {
-                                data[category] = [];
-                            }
-                            // Firestore से Poster URL प्राप्त करें या एक डिफ़ॉल्ट प्रदान करें
-                            const posterUrl = docData.posterUrl || `https://image.tmdb.org/t/p/w500${docData.poster_path}`;
-
-                            data[category].push({ id: doc.id, ...docData, posterUrl });
-                        });
-
-                        if (pageId === 'movie') allMoviesData = data;
-                        else if (pageId === 'webseries') allWebseriesData = data;
-                        else allCartoonsData = data;
+                    return;
+                }
+                
+                container.innerHTML = '<div class="loading-spinner"></div>';
+                try {
+                    const collectionRef = collection(firestore, collectionName);
+                    const categorySnapshot = await getDocs(collectionRef);
+                    
+                    const data = {};
+                    for (const categoryDoc of categorySnapshot.docs) {
+                        const categoryName = categoryDoc.id;
+                        const itemsInCategory = categoryDoc.data();
                         
-                        displayContentForCategory(pageId, selectedCategory);
-                    } catch (error) {
-                        console.error("Firestore Error:", error);
-                        container.innerHTML = `<div class="empty-message">Failed to load data. Please check your Firestore rules.</div>`;
+                        data[categoryName] = [];
+                        
+                        for (const itemId in itemsInCategory) {
+                            const itemDetails = itemsInCategory[itemId];
+                            itemDetails.id = itemId;
+                            itemDetails.category = categoryName; // श्रेणी को जोड़ें
+                            itemDetails.posterUrl = itemDetails.posterUrl || `https://image.tmdb.org/t/p/w500${itemDetails.poster_path || ''}`;
+                            data[categoryName].push(itemDetails);
+                        }
                     }
+
+                    if (pageId === 'movie') allMoviesData = data;
+                    else if (pageId === 'webseries') allWebseriesData = data;
+                    else allCartoonsData = data;
+                    
+                    displayContentForCategory(pageId, selectedCategory);
+
+                } catch (error) {
+                    console.error("Firestore Error:", error);
+                    container.innerHTML = `<div class="empty-message">Failed to load data. <b>Please check your Firestore rules in Firebase Console.</b></div>`;
                 }
             };
             
@@ -742,21 +729,20 @@
                         const link = this.dataset.link;
                         const tmdbId = this.dataset.tmdbId;
                         const id = this.dataset.id;
-                        
-                        if (link) { // Admin Panel से Mega Link है
+                        const category = this.dataset.category;
+
+                        if (link) {
                             window.open(link, '_blank');
-                        } else if (type === 'movies' && tmdbId) { // VidSrc से मूवी चलाएं
-                            window.open(`https://vidsrc.to/embed/movie/${tmdbId}`, '_blank');
-                        } else if (type === 'webseries' && tmdbId) { // VidSrc से वेबसीरीज़ चलाएं
-                            window.open(`https://vidsrc.to/embed/tv/${tmdbId}`, '_blank');
-                        }
-                        else { // विवरण पेज दिखाएं
+                        } else if ((type === 'movies' || type === 'webseries') && tmdbId) {
+                            const urlType = type === 'movies' ? 'movie' : 'tv';
+                            window.open(`https://vidsrc.to/embed/${urlType}/${tmdbId}`, '_blank');
+                        } else {
                              try {
-                                const docRef = doc(firestore, type, id);
+                                const docRef = doc(firestore, type, category);
                                 const docSnap = await getDoc(docRef);
 
-                                if (docSnap.exists()) {
-                                    showDetailPage(docSnap.data());
+                                if (docSnap.exists() && docSnap.data()[id]) {
+                                    showDetailPage(docSnap.data()[id]);
                                 } else {
                                     alert("Details not found for this item.");
                                 }
@@ -769,11 +755,6 @@
                 });
             }
 
-
-            function addMoreButtonListeners() {
-                // Future implementation
-            }
-            
             const backButton = detailPage.querySelector('.back-button');
             backButton.addEventListener('click', () => {
                 detailPage.classList.remove('active');
@@ -786,7 +767,9 @@
                 window.scrollTo(0, 0);
                 
                 const seasonButtonsContainer = detailPage.querySelector('.season-buttons');
+                const partsListContainer = detailPage.querySelector('.parts-list');
                 seasonButtonsContainer.innerHTML = '';
+                partsListContainer.innerHTML = '';
 
                 const seasons = data.seasons;
                 if (seasons) {
@@ -810,7 +793,7 @@
                         });
                     });
                 } else {
-                    detailPage.querySelector('.parts-list').innerHTML = `<div class="empty-message">No seasons found.</div>`;
+                    partsListContainer.innerHTML = `<div class="empty-message">No seasons found.</div>`;
                 }
             }
 
@@ -843,7 +826,6 @@
 
                 const performSearch = () => {
                     const searchTerm = searchBar.value.toLowerCase().trim();
-                    const allCards = container.querySelectorAll('.media-card');
                     
                     if (searchTerm === '') {
                         const activeChip = page.querySelector('.category-chip.active');
@@ -858,7 +840,7 @@
                     resultsContainer.className = 'media-scroller';
                     resultsContainer.style.flexWrap = 'wrap';
                     resultsContainer.style.justifyContent = 'flex-start';
-
+                    
                     let found = false;
                     let allData = null;
                     const pageId = page.id.replace('Page', '');
@@ -875,6 +857,7 @@
                                         card.className = 'media-card';
                                         card.dataset.type = pageId;
                                         card.dataset.id = item.id;
+                                        card.dataset.category = item.category;
                                         card.dataset.link = item.megaLink || '';
                                         card.dataset.title = item.title;
                                         card.dataset.tmdbId = item.tmdbId || '';
@@ -904,8 +887,7 @@
                 searchButton.addEventListener('click', performSearch);
             });
 
-            // --- शुरुआती लोड ---
-            checkFirstTimeUser(); // सबसे पहले यूज़र को चेक करें
+            checkFirstTimeUser();
             loadInitialData('movie');
 
         });
