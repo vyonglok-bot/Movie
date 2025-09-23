@@ -90,28 +90,32 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .empty-message { text-align: center; color: var(--light-text-color); padding: 40px 20px; font-size: 16px; }
 
-        /* --- SERVER SELECTION MODAL STYLES --- */
-        .server-modal-overlay {
+        /* --- LINK SELECTION MODAL STYLES --- */
+        .link-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center;
             align-items: center; z-index: 2000;
         }
-        .server-modal-content {
+        .link-modal-content {
             background: var(--card-background); padding: 20px; border-radius: 12px;
-            width: 90%; max-width: 350px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s;
+            width: 90%; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s; max-height: 80vh; overflow-y: auto;
         }
-        .server-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .server-modal-header h3 { margin: 0; font-size: 18px; }
-        .server-modal-close { font-size: 24px; cursor: pointer; font-weight: bold; }
-        .server-modal-body { display: flex; flex-direction: column; gap: 10px; }
-        .server-btn {
+        .link-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .link-modal-header h3 { margin: 0; font-size: 18px; }
+        .link-modal-close { font-size: 24px; cursor: pointer; font-weight: bold; }
+        .link-modal-body h4 { margin-top: 15px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        .link-modal-body { display: flex; flex-direction: column; gap: 10px; }
+        .link-btn {
             background-color: var(--primary-color); color: white; border: none;
             padding: 12px; border-radius: 8px; font-size: 16px;
             font-weight: bold; cursor: pointer; text-align: center;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s; text-decoration: none; display: block;
         }
-        .server-btn:hover { background-color: var(--secondary-color); }
+        .link-btn.download { background-color: #27ae60; }
+        .link-btn:hover { background-color: var(--secondary-color); }
+        .link-btn.download:hover { background-color: #2ecc71; }
+        .link-modal-spinner { margin: 20px auto; }
 
     </style>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -315,57 +319,96 @@
                     card.dataset.fromFirestore = item.fromFirestore || false;
                     if (item.megaLink) card.dataset.link = item.megaLink;
                     if (item.tmdbId) card.dataset.tmdbId = item.tmdbId;
-                    if (item.title) card.dataset.title = item.title;
+                    if (item.title) card.dataset.title = item.title; // Pass title for the modal
                     card.innerHTML = `<img src="${item.posterUrl}" alt="Poster" class="media-poster"><div class="media-title">${item.title}</div>`;
                     scroller.appendChild(card);
                 });
                 container.appendChild(categoryDiv);
             }
 
-            // ########## FINAL AND WORKING CODE STARTS HERE ##########
-            function showServerSelectionModal(tmdbId, type, title) {
-                const existingModal = document.querySelector('.server-modal-overlay');
+            // ########## FINAL, ROBUST SOLUTION STARTS HERE ##########
+            const CONSUMET_API_URL = "https://consumet-api-gamma-two.vercel.app";
+
+            async function fetchMovieSources(tmdbId, mediaType) {
+                const type = mediaType === 'movies' ? 'movie' : 'tv';
+                try {
+                    // Step 1: Get movie/tv info to find the provider ID (e.g., from FlixHQ)
+                    const infoUrl = `${CONSUMET_API_URL}/movies/flixhq/${encodeURIComponent(tmdbId)}?type=${type}`; // It says movies but works for tv too
+                    const infoRes = await fetch(infoUrl);
+                    if (!infoRes.ok) throw new Error('Failed to fetch movie info');
+                    const infoData = await infoRes.json();
+                    
+                    const providerId = infoData.id;
+                    if (!providerId) throw new Error('Could not find a provider ID for this title.');
+
+                    // Step 2: Use the provider ID to get streaming links
+                    const watchUrl = `${CONSUMET_API_URL}/movies/flixhq/watch?episodeId=${infoData.episodes[0].id}&mediaId=${providerId}`;
+                    const watchRes = await fetch(watchUrl);
+                    if (!watchRes.ok) throw new Error('Failed to fetch streaming sources');
+                    const watchData = await watchRes.json();
+                    
+                    return watchData;
+
+                } catch (error) {
+                    console.error("Error fetching sources from API:", error);
+                    return null;
+                }
+            }
+
+            async function showLinkSelectionModal(tmdbId, type, title) {
+                const existingModal = document.querySelector('.link-modal-overlay');
                 if (existingModal) existingModal.remove();
 
-                const urlType = type === 'movies' ? 'movie' : 'tv';
-                
-                // --- THIS IS THE NEW, CURATED LIST OF WORKING SERVERS ---
-                const servers = [
-                    { name: "Server 1 (Recommended)", url: `https://www.2embed.cc/embed/${urlType}?tmdb=${tmdbId}` },
-                    { name: "Server 2", url: `https://embed.smashystream.com/playere.php?tmdb=${tmdbId}` },
-                    { name: "Server 3", url: `https://moviesapi.club/${urlType}/${tmdbId}` }
-                ];
-
                 const modalOverlay = document.createElement('div');
-                modalOverlay.className = 'server-modal-overlay';
-                
+                modalOverlay.className = 'link-modal-overlay';
                 const modalContent = document.createElement('div');
-                modalContent.className = 'server-modal-content';
-
+                modalContent.className = 'link-modal-content';
                 modalContent.innerHTML = `
-                    <div class="server-modal-header">
-                        <h3>Play ${title}</h3>
-                        <span class="server-modal-close">&times;</span>
+                    <div class="link-modal-header">
+                        <h3>${title}</h3>
+                        <span class="link-modal-close">&times;</span>
                     </div>
-                    <div class="server-modal-body"></div>
-                `;
-
-                const modalBody = modalContent.querySelector('.server-modal-body');
-                servers.forEach(server => {
-                    const serverBtn = document.createElement('a'); // Using <a> tag for direct navigation
-                    serverBtn.className = 'server-btn';
-                    serverBtn.textContent = server.name;
-                    serverBtn.href = server.url;
-                    serverBtn.target = '_blank'; // Open in new tab
-                    modalBody.appendChild(serverBtn);
-                });
-
+                    <div class="link-modal-body">
+                        <div class="loading-spinner link-modal-spinner"></div>
+                        <p style="text-align:center;">Finding best links...</p>
+                    </div>`;
                 modalOverlay.appendChild(modalContent);
                 document.body.appendChild(modalOverlay);
 
                 const closeModal = () => modalOverlay.remove();
-                modalContent.querySelector('.server-modal-close').onclick = closeModal;
+                modalContent.querySelector('.link-modal-close').onclick = closeModal;
                 modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
+
+                const sources = await fetchMovieSources(tmdbId, type);
+                const modalBody = modalContent.querySelector('.link-modal-body');
+                modalBody.innerHTML = ''; // Clear spinner
+
+                if (sources && (sources.sources?.length > 0 || sources.download)) {
+                    if (sources.sources && sources.sources.length > 0) {
+                        modalBody.innerHTML += '<h4>Stream Online</h4>';
+                        sources.sources.forEach((source, index) => {
+                            if(source.quality === '1080p' || source.quality === '720p' || source.quality === 'auto'){
+                                const linkBtn = document.createElement('a');
+                                linkBtn.className = 'link-btn';
+                                linkBtn.textContent = `Server ${index + 1} (${source.quality})`;
+                                linkBtn.href = source.url;
+                                linkBtn.target = '_blank';
+                                modalBody.appendChild(linkBtn);
+                            }
+                        });
+                    }
+                    if (sources.download) {
+                        modalBody.innerHTML += '<h4>Download</h4>';
+                        const downloadBtn = document.createElement('a');
+                        downloadBtn.className = 'link-btn download';
+                        downloadBtn.textContent = `Download Movie`;
+                        downloadBtn.href = sources.download;
+                        downloadBtn.target = '_blank';
+                        modalBody.appendChild(downloadBtn);
+                    }
+                } else {
+                    modalBody.innerHTML = '<p style="text-align:center;">Sorry, no working links found for this title at the moment.</p>';
+                }
             }
 
             function addMediaCardListeners() {
@@ -379,7 +422,7 @@
                         if (megaLink) {
                             window.open(megaLink, '_blank');
                         } else if (tmdbId) {
-                            showServerSelectionModal(tmdbId, type, title);
+                            showLinkSelectionModal(tmdbId, type, title);
                         } else if (fromFirestore) {
                              try {
                                 const docRef = doc(firestore, type, id);
