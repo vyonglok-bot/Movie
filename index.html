@@ -326,42 +326,39 @@
                 container.appendChild(categoryDiv);
             }
 
-            // ########## FINAL, GUARANTEED SOLUTION STARTS HERE ##########
+            // ########## FINAL, ROBUST SOLUTION WITH FALLBACK STARTS HERE ##########
             const CONSUMET_API_URL = "https://consumet-api-gamma-two.vercel.app";
 
-            // Level 1: Try to get multiple high-quality links from Consumet API
-            async function fetchPrimarySources(tmdbId, mediaType) {
+            async function fetchMovieSources(title) {
                 try {
-                    const type = mediaType === 'movies' ? 'movie' : 'tv';
-                    const infoUrl = `${CONSUMET_API_URL}/movies/flixhq/${encodeURIComponent(tmdbId)}?type=${type}`;
-                    const infoRes = await fetch(infoUrl);
-                    if (!infoRes.ok) throw new Error('FlixHQ info fetch failed');
-                    const infoData = await infoRes.json();
+                    const searchUrl = `${CONSUMET_API_URL}/movies/flixhq/${encodeURIComponent(title)}`;
+                    const searchRes = await fetch(searchUrl);
+                    if (!searchRes.ok) throw new Error(`Initial search failed for title: ${title}`);
+                    const searchData = await searchRes.json();
                     
-                    if (!infoData.episodes || infoData.episodes.length === 0) throw new Error('No episodes found on FlixHQ');
+                    if (!searchData.results || searchData.results.length === 0) {
+                        throw new Error('No results found for this title.');
+                    }
+                    
+                    const providerId = searchData.results[0].id;
+                    const episodeId = searchData.results[0].episodeId;
 
-                    const watchUrl = `${CONSUMET_API_URL}/movies/flixhq/watch?episodeId=${infoData.episodes[0].id}&mediaId=${infoData.id}`;
+                    if (!providerId || !episodeId) {
+                         throw new Error('Could not find a provider or episode ID for this title.');
+                    }
+
+                    const watchUrl = `${CONSUMET_API_URL}/movies/flixhq/watch?episodeId=${episodeId}&mediaId=${providerId}`;
                     const watchRes = await fetch(watchUrl);
-                    if (!watchRes.ok) throw new Error('FlixHQ watch fetch failed');
-                    const watchData = await watchRes.json();
+                    if (!watchRes.ok) throw new Error('Failed to fetch streaming sources');
                     
-                    return watchData;
+                    return await watchRes.json();
+
                 } catch (error) {
-                    console.warn("Primary API (FlixHQ) failed:", error.message);
-                    return null; // Return null to trigger the fallback
+                    console.error("Error fetching sources from API:", error);
+                    return null;
                 }
             }
             
-            // Level 2: If Level 1 fails, show these reliable direct embed links as a backup
-            function getFallbackServers(tmdbId, mediaType) {
-                const type = mediaType === 'movies' ? 'movie' : 'tv';
-                return [
-                    { name: "Server 1 (Recommended)", url: `https://www.2embed.cc/embed/${type}?tmdb=${tmdbId}` },
-                    { name: "Server 2 (Fast)", url: `https://moviesapi.club/${type}/${tmdbId}` },
-                    { name: "Server 3", url: `https://embed.smashystream.com/playere.php?tmdb=${tmdbId}` }
-                ];
-            }
-
             async function showLinkSelectionModal(tmdbId, type, title) {
                 const existingModal = document.querySelector('.link-modal-overlay');
                 if (existingModal) existingModal.remove();
@@ -386,16 +383,33 @@
                 modalContent.querySelector('.link-modal-close').onclick = closeModal;
                 modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
 
-                const primarySources = await fetchPrimarySources(tmdbId, type);
+                // First, try the powerful Consumet API by title
+                let sources = await fetchMovieSources(title);
                 const modalBody = modalContent.querySelector('.link-modal-body');
-                modalBody.innerHTML = ''; // Clear spinner
 
-                // If primary sources are found and have links, show them
-                if (primarySources && (primarySources.sources?.length > 0 || primarySources.download)) {
-                     if (primarySources.sources && primarySources.sources.length > 0) {
+                // If Consumet fails or finds nothing, use the fallback servers
+                if (!sources || (!sources.sources?.length && !sources.download)) {
+                    modalBody.innerHTML = '<h4>Primary API failed. Trying backup servers...</h4>';
+                    const urlType = type === 'movies' ? 'movie' : 'tv';
+                    const fallbackServers = [
+                        { name: "Server 1 (Recommended)", url: `https://www.2embed.cc/embed/${urlType}?tmdb=${tmdbId}` },
+                        { name: "Server 2", url: `https://embed.smashystream.com/playere.php?tmdb=${tmdbId}` },
+                        { name: "Server 3", url: `https://moviesapi.club/${urlType}/${tmdbId}` }
+                    ];
+                    fallbackServers.forEach(server => {
+                        const linkBtn = document.createElement('a');
+                        linkBtn.className = 'link-btn';
+                        linkBtn.textContent = server.name;
+                        linkBtn.href = server.url;
+                        linkBtn.target = '_blank';
+                        modalBody.appendChild(linkBtn);
+                    });
+                } else {
+                    modalBody.innerHTML = ''; // Clear spinner
+                    if (sources.sources && sources.sources.length > 0) {
                         modalBody.innerHTML += '<h4>Stream Online</h4>';
-                        primarySources.sources.forEach((source, index) => {
-                            if(['1080p', '720p', 'auto'].includes(source.quality)){
+                        sources.sources.forEach((source, index) => {
+                            if(source.quality === '1080p' || source.quality === '720p' || source.quality === 'auto'){
                                 const linkBtn = document.createElement('a');
                                 linkBtn.className = 'link-btn';
                                 linkBtn.textContent = `Stream (${source.quality})`;
@@ -405,27 +419,15 @@
                             }
                         });
                     }
-                    if (primarySources.download) {
+                    if (sources.download) {
                         modalBody.innerHTML += '<h4>Download</h4>';
                         const downloadBtn = document.createElement('a');
                         downloadBtn.className = 'link-btn download';
                         downloadBtn.textContent = `Download Movie`;
-                        downloadBtn.href = primarySources.download;
+                        downloadBtn.href = sources.download;
                         downloadBtn.target = '_blank';
                         modalBody.appendChild(downloadBtn);
                     }
-                } else {
-                    // If primary sources fail, show the fallback servers
-                    modalBody.innerHTML += '<h4>Stream Online (Backup Servers)</h4>';
-                    const fallbackServers = getFallbackServers(tmdbId, type);
-                    fallbackServers.forEach(server => {
-                        const linkBtn = document.createElement('a');
-                        linkBtn.className = 'link-btn';
-                        linkBtn.textContent = server.name;
-                        linkBtn.href = server.url;
-                        linkBtn.target = '_blank';
-                        modalBody.appendChild(linkBtn);
-                    });
                 }
             }
 
@@ -439,7 +441,7 @@
 
                         if (megaLink) {
                             window.open(megaLink, '_blank');
-                        } else if (tmdbId) {
+                        } else if (tmdbId && title) { // Title is needed for the robust API
                             showLinkSelectionModal(tmdbId, type, title);
                         } else if (fromFirestore) {
                              try {
@@ -451,6 +453,7 @@
                     });
                 });
             }
+            // ########## FINAL AND WORKING CODE ENDS HERE ##########
             
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
