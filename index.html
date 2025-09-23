@@ -25,11 +25,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            padding-bottom: 70px;
+            margin: 0; padding: 0; background-color: var(--background-color);
+            color: var(--text-color); padding-bottom: 70px;
         }
 
         .page { padding-top: 15px; }
@@ -67,59 +64,55 @@
         .category-title { font-size: 20px; font-weight: bold; }
         .media-scroller { display: flex; overflow-x: auto; gap: 15px; padding: 5px 0 15px 0; min-height: 230px; }
         .media-scroller::-webkit-scrollbar { display: none; }
-        .media-card {
-            flex: 0 0 130px; width: 130px; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            cursor: pointer; perspective: 1000px;
-        }
+        .media-card { flex: 0 0 130px; width: 130px; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; cursor: pointer; perspective: 1000px; }
         .media-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px var(--strong-shadow-color); }
         .media-card:hover .media-poster { transform: rotateY(5deg); }
-        .media-poster {
-            width: 100%; aspect-ratio: 9 / 16; background-color: #e0e0e0; border-radius: 12px;
-            object-fit: cover; border: 1px solid var(--border-color); box-shadow: 0 5px 10px var(--shadow-color);
-            transition: transform 0.3s ease-in-out;
-        }
-        .media-title {
-            font-size: 14px; font-weight: 500; margin-top: 8px; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis; padding-right: 5px;
-        }
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background-color: var(--card-background); display: flex; justify-content: space-around;
-            align-items: center; box-shadow: 0 -2px 8px var(--shadow-color); z-index: 1000;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; color: var(--light-text-color);
-            text-decoration: none; flex-grow: 1; padding: 5px 0; transition: all 0.2s;
-        }
+        .media-poster { width: 100%; aspect-ratio: 9 / 16; background-color: #e0e0e0; border-radius: 12px; object-fit: cover; border: 1px solid var(--border-color); box-shadow: 0 5px 10px var(--shadow-color); transition: transform 0.3s ease-in-out; }
+        .media-title { font-size: 14px; font-weight: 500; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 5px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background-color: var(--card-background); display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -2px 8px var(--shadow-color); z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--light-text-color); text-decoration: none; flex-grow: 1; padding: 5px 0; transition: all 0.2s; }
         .nav-item.active { color: var(--primary-color); transform: translateY(-3px); }
         .nav-item .icon { font-size: 24px; }
         .nav-item .label { font-size: 12px; margin-top: 2px; font-weight: 500; }
         .page.active { display: block; }
         .page { display: none; }
-        
         .detail-page-header { display: flex; align-items: center; padding: 12px 15px; background-color: var(--card-background); box-shadow: 0 2px 5px var(--shadow-color); }
         .back-button { font-size: 24px; margin-right: 15px; cursor: pointer; }
         .season-buttons { display: flex; gap: 10px; overflow-x: auto; }
-        .season-btn {
-            background-color: var(--card-background); color: var(--primary-color); padding: 8px 16px; border-radius: 20px;
-            font-size: 14px; cursor: pointer; border: 1px solid var(--border-color); white-space: nowrap;
-        }
+        .season-btn { background-color: var(--card-background); color: var(--primary-color); padding: 8px 16px; border-radius: 20px; font-size: 14px; cursor: pointer; border: 1px solid var(--border-color); white-space: nowrap; }
         .season-btn.active { background-color: var(--primary-color); color: white; }
         .parts-list { padding: 20px 15px; }
-        .part-item {
-            display: flex; align-items: center; padding: 15px; margin-bottom: 10px; background-color: var(--card-background);
-            border-radius: 10px; box-shadow: 0 2px 4px var(--shadow-color); cursor: pointer; transition: background-color 0.2s, transform 0.2s;
-        }
+        .part-item { display: flex; align-items: center; padding: 15px; margin-bottom: 10px; background-color: var(--card-background); border-radius: 10px; box-shadow: 0 2px 4px var(--shadow-color); cursor: pointer; transition: background-color 0.2s, transform 0.2s; }
         .part-item:hover { background-color: #f1f1f1; transform: translateX(5px); }
         .part-poster { width: 100px; height: 75px; border-radius: 8px; object-fit: cover; margin-right: 15px; background-color: #e0e0e0; }
         .part-title { font-size: 16px; font-weight: 500; }
-        
-        .loading-spinner {
-            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary-color); border-radius: 50%;
-            width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
-        }
+        .loading-spinner { border: 5px solid #f3f3f3; border-top: 5px solid var(--primary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .empty-message { text-align: center; color: var(--light-text-color); padding: 40px 20px; font-size: 16px; }
+
+        /* --- NEW SERVER SELECTION MODAL STYLES --- */
+        .server-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); display: flex; justify-content: center;
+            align-items: center; z-index: 2000;
+        }
+        .server-modal-content {
+            background: var(--card-background); padding: 20px; border-radius: 12px;
+            width: 90%; max-width: 350px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s;
+        }
+        .server-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .server-modal-header h3 { margin: 0; font-size: 18px; }
+        .server-modal-close { font-size: 24px; cursor: pointer; font-weight: bold; }
+        .server-modal-body { display: flex; flex-direction: column; gap: 10px; }
+        .server-btn {
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 12px; border-radius: 8px; font-size: 16px;
+            font-weight: bold; cursor: pointer; text-align: center;
+            transition: background-color 0.2s;
+        }
+        .server-btn:hover { background-color: var(--secondary-color); }
+
     </style>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
@@ -232,9 +225,7 @@
             let allWebseriesData = null;
             let allCartoonsData = null;
             
-            const genreMap = {
-                28: "Action & Adventure", 12: "Action & Adventure", 16: "Animated / Anime", 35: "Comedy / Dark Comedy", 80: "Crime", 99: "Documentary", 18: "Romantic Drama", 10751: "Family", 14: "Fantasy / Mythology", 36: "Biopic / Historical Drama", 27: "Horror / Supernatural", 10402: "Music", 9648: "Thriller / Mystery", 10749: "Romantic Drama", 878: "Sci-Fi", 10770: "TV Movie", 53: "Thriller / Mystery", 10752: "War", 37: "Western"
-            };
+            const genreMap = { 28: "Action & Adventure", 12: "Action & Adventure", 16: "Animated / Anime", 35: "Comedy / Dark Comedy", 80: "Crime", 99: "Documentary", 18: "Romantic Drama", 10751: "Family", 14: "Fantasy / Mythology", 36: "Biopic / Historical Drama", 27: "Horror / Supernatural", 10402: "Music", 9648: "Thriller / Mystery", 10749: "Romantic Drama", 878: "Sci-Fi", 10770: "TV Movie", 53: "Thriller / Mystery", 10752: "War", 37: "Western" };
             const mapGenres = (genreIds) => genreIds.map(id => genreMap[id]).find(g => g) || "Uncategorized";
 
             async function fetchExternalContent(mediaType) {
@@ -242,29 +233,19 @@
                 const type = mediaType === 'movies' ? 'movie' : 'tv';
                 const totalPagesToFetch = 15;
                 const requests = [];
-
                 for (let i = 1; i <= totalPagesToFetch; i++) {
                     requests.push(fetch(`https://tmdb-proxy.vercel.app/3/discover/${type}?page=${i}&language=hi-IN&with_original_language=hi`).then(res => res.json()));
                     requests.push(fetch(`https://tmdb-proxy.vercel.app/3/discover/${type}?page=${i}`).then(res => res.json()));
                 }
-
                 const responses = await Promise.all(requests);
                 const titles = new Set();
-
                 for (const data of responses) {
                     if (data.results) {
                         data.results.forEach(item => {
                             const title = item.title || item.name;
                             if (item.poster_path && !titles.has(title)) {
                                 titles.add(title);
-                                results.push({
-                                    id: item.id.toString(),
-                                    tmdbId: item.id.toString(),
-                                    title: title,
-                                    posterUrl: `https://image.tmdb.org/t/p/w500${item.poster_path}`,
-                                    category: item.original_language === 'hi' ? 'Bollywood' : 'Hollywood',
-                                    genre: mapGenres(item.genre_ids),
-                                });
+                                results.push({ id: item.id.toString(), tmdbId: item.id.toString(), title: title, posterUrl: `https://image.tmdb.org/t/p/w500${item.poster_path}`, category: item.original_language === 'hi' ? 'Bollywood' : 'Hollywood', genre: mapGenres(item.genre_ids) });
                             }
                         });
                     }
@@ -276,34 +257,24 @@
                 const container = document.getElementById(`${pageId}-categories-container`);
                 const activeChip = document.querySelector(`#${pageId}Page .category-chip.active`);
                 const selectedCategory = activeChip ? activeChip.dataset.category : null;
-
                 let dataVar, collectionName, mediaType;
                 if (pageId === 'movie') { dataVar = allMoviesData; collectionName = 'movies'; mediaType = 'movies'; } 
                 else if (pageId === 'webseries') { dataVar = allWebseriesData; collectionName = 'webseries'; mediaType = 'webseries'; }
                 else { dataVar = allCartoonsData; collectionName = 'cartoons'; mediaType = 'cartoons'; }
-
-                if (dataVar) {
-                    displayContentForCategory(pageId, selectedCategory, dataVar);
-                    return;
-                }
-
+                if (dataVar) { displayContentForCategory(pageId, selectedCategory, dataVar); return; }
                 container.innerHTML = '<div class="loading-spinner"></div>';
                 try {
                     const firestorePromise = getDocs(collection(firestore, collectionName));
                     const externalPromise = mediaType !== 'cartoons' ? fetchExternalContent(mediaType) : Promise.resolve([]);
                     const [firestoreSnapshot, externalItems] = await Promise.all([firestorePromise, externalPromise]);
                     let firestoreItems = [];
-                    firestoreSnapshot.forEach(doc => {
-                        firestoreItems.push({ id: doc.id, fromFirestore: true, ...doc.data() });
-                    });
+                    firestoreSnapshot.forEach(doc => { firestoreItems.push({ id: doc.id, fromFirestore: true, ...doc.data() }); });
                     const firestoreTitles = new Set(firestoreItems.map(item => item.title));
                     const uniqueExternalItems = externalItems.filter(extItem => !firestoreTitles.has(extItem.title));
                     const allItems = [...firestoreItems, ...uniqueExternalItems];
-                    
                     if (mediaType === 'movies') allMoviesData = allItems;
                     else if (mediaType === 'webseries') allWebseriesData = allItems;
                     else allCartoonsData = firestoreItems;
-
                     displayContentForCategory(pageId, selectedCategory, allItems);
                 } catch (error) {
                     console.error("Data Loading Error:", error);
@@ -324,19 +295,11 @@
                     }, {});
                     const genreOrder = [ "Action & Adventure", "Romantic Drama", "Comedy / Dark Comedy", "Thriller / Mystery", "Sci-Fi", "Horror / Supernatural", "Fantasy / Mythology", "Crime" ];
                     genreOrder.forEach(genre => {
-                        if (groupedByGenre[genre]) {
-                            renderMediaSection(container, genre, groupedByGenre[genre], pageId.replace('Page', ''));
-                            delete groupedByGenre[genre];
-                        }
+                        if (groupedByGenre[genre]) { renderMediaSection(container, genre, groupedByGenre[genre], pageId.replace('Page', '')); delete groupedByGenre[genre]; }
                     });
-                    for (const genre in groupedByGenre) {
-                        renderMediaSection(container, genre, groupedByGenre[genre], pageId.replace('Page', ''));
-                    }
+                    for (const genre in groupedByGenre) { renderMediaSection(container, genre, groupedByGenre[genre], pageId.replace('Page', '')); }
                 }
-                
-                if (container.innerHTML === '') {
-                    container.innerHTML = `<div class="empty-message">No content found in '${selectedCategory}'.</div>`;
-                }
+                if (container.innerHTML === '') { container.innerHTML = `<div class="empty-message">No content found in '${selectedCategory}'.</div>`; }
                 addMediaCardListeners();
             }
 
@@ -348,60 +311,93 @@
                 items.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'media-card';
-                    card.dataset.type = mediaType;
-                    card.dataset.id = item.id;
+                    card.dataset.type = mediaType; card.dataset.id = item.id;
                     card.dataset.fromFirestore = item.fromFirestore || false;
                     if (item.megaLink) card.dataset.link = item.megaLink;
                     if (item.tmdbId) card.dataset.tmdbId = item.tmdbId;
-                    card.innerHTML = `
-                        <img src="${item.posterUrl}" alt="Poster" class="media-poster">
-                        <div class="media-title">${item.title}</div>`;
+                    if (item.title) card.dataset.title = item.title;
+                    card.innerHTML = `<img src="${item.posterUrl}" alt="Poster" class="media-poster"><div class="media-title">${item.title}</div>`;
                     scroller.appendChild(card);
                 });
                 container.appendChild(categoryDiv);
             }
 
+            // ########## NEW AND IMPROVED CODE STARTS HERE ##########
+            function showServerSelectionModal(tmdbId, type, title) {
+                // Remove any existing modal first
+                const existingModal = document.querySelector('.server-modal-overlay');
+                if (existingModal) existingModal.remove();
+
+                const urlType = type === 'movies' ? 'movie' : 'tv';
+                const servers = [
+                    { name: "Server 1 (VidSrc)", url: `https://vidsrc.pro/embed/${urlType}/${tmdbId}` },
+                    { name: "Server 2 (2Embed)", url: `https://www.2embed.to/embed/tmdb/${urlType}?id=${tmdbId}` },
+                    { name: "Server 3 (MultiEmbed)", url: `https://multiembed.mov/?video_id=${tmdbId}` }
+                ];
+
+                const modalOverlay = document.createElement('div');
+                modalOverlay.className = 'server-modal-overlay';
+                
+                const modalContent = document.createElement('div');
+                modalContent.className = 'server-modal-content';
+
+                modalContent.innerHTML = `
+                    <div class="server-modal-header">
+                        <h3>Choose a Server for ${title}</h3>
+                        <span class="server-modal-close">&times;</span>
+                    </div>
+                    <div class="server-modal-body"></div>
+                `;
+
+                const modalBody = modalContent.querySelector('.server-modal-body');
+                servers.forEach(server => {
+                    const serverBtn = document.createElement('button');
+                    serverBtn.className = 'server-btn';
+                    serverBtn.textContent = server.name;
+                    serverBtn.onclick = () => window.open(server.url, '_blank');
+                    modalBody.appendChild(serverBtn);
+                });
+
+                modalOverlay.appendChild(modalContent);
+                document.body.appendChild(modalOverlay);
+
+                const closeModal = () => modalOverlay.remove();
+                modalContent.querySelector('.server-modal-close').onclick = closeModal;
+                modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
+            }
+
             function addMediaCardListeners() {
                 document.querySelectorAll('.media-card').forEach(card => {
                     card.addEventListener('click', async function() {
-                        const type = this.dataset.type;
-                        const id = this.dataset.id;
+                        const type = this.dataset.type; const id = this.dataset.id;
                         const fromFirestore = this.dataset.fromFirestore === 'true';
-                        const megaLink = this.dataset.link;
-                        const tmdbId = this.dataset.tmdbId;
+                        const megaLink = this.dataset.link; const tmdbId = this.dataset.tmdbId;
+                        const title = this.dataset.title;
 
                         if (megaLink) {
                             window.open(megaLink, '_blank');
                         } else if (tmdbId) {
-                            const urlType = type === 'movies' ? 'movie' : 'tv';
-                            // ########## THIS IS THE CORRECTED LINE ##########
-                            window.open(`https://vidsrc.me/embed/${urlType}?tmdb=${tmdbId}`, '_blank');
-                            // ###############################################
+                            showServerSelectionModal(tmdbId, type, title); // <-- THIS IS THE NEW LOGIC
                         } else if (fromFirestore) {
                              try {
                                 const docRef = doc(firestore, type, id);
                                 const docSnap = await getDoc(docRef);
-                                if (docSnap.exists()) {
-                                    showDetailPage(docSnap.data());
-                                }
+                                if (docSnap.exists()) { showDetailPage(docSnap.data()); }
                             } catch (error) { console.error("Error fetching details:", error); }
                         }
                     });
                 });
             }
+            // ########## NEW AND IMPROVED CODE ENDS HERE ##########
             
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const pageId = this.dataset.page;
-                    appContainer.style.display = 'block';
-                    detailPage.classList.remove('active');
+                    e.preventDefault(); const pageId = this.dataset.page;
+                    appContainer.style.display = 'block'; detailPage.classList.remove('active');
                     document.querySelector('.nav-item.active').classList.remove('active');
                     document.querySelector('.page.active').classList.remove('active');
-                    this.classList.add('active');
-                    document.getElementById(pageId).classList.add('active');
-                    window.scrollTo(0, 0);
-                    loadInitialData(pageId.replace('Page', ''));
+                    this.classList.add('active'); document.getElementById(pageId).classList.add('active');
+                    window.scrollTo(0, 0); loadInitialData(pageId.replace('Page', ''));
                 });
             });
 
@@ -421,38 +417,27 @@
             });
 
             detailPage.querySelector('.back-button').addEventListener('click', () => {
-                detailPage.classList.remove('active');
-                appContainer.style.display = 'block';
+                detailPage.classList.remove('active'); appContainer.style.display = 'block';
             });
             
             function showDetailPage(data) {
-                appContainer.style.display = 'none';
-                detailPage.classList.add('active');
-                window.scrollTo(0, 0);
+                appContainer.style.display = 'none'; detailPage.classList.add('active'); window.scrollTo(0, 0);
                 const seasonButtonsContainer = detailPage.querySelector('.season-buttons');
                 const partsListContainer = detailPage.querySelector('.parts-list');
-                seasonButtonsContainer.innerHTML = '';
-                partsListContainer.innerHTML = '';
+                seasonButtonsContainer.innerHTML = ''; partsListContainer.innerHTML = '';
                 if (data.seasons) {
                     const seasonKeys = Object.keys(data.seasons).sort((a,b) => parseInt(a) - parseInt(b));
                     seasonKeys.forEach((seasonNum, index) => {
                         const btn = document.createElement('button');
-                        btn.className = 'season-btn';
-                        btn.textContent = `Season ${seasonNum}`;
-                        if (index === 0) {
-                            btn.classList.add('active');
-                            loadParts(data.seasons[seasonNum]);
-                        }
+                        btn.className = 'season-btn'; btn.textContent = `Season ${seasonNum}`;
+                        if (index === 0) { btn.classList.add('active'); loadParts(data.seasons[seasonNum]); }
                         btn.addEventListener('click', function() {
                             seasonButtonsContainer.querySelector('.active').classList.remove('active');
-                            this.classList.add('active');
-                            loadParts(data.seasons[seasonNum]);
+                            this.classList.add('active'); loadParts(data.seasons[seasonNum]);
                         });
                         seasonButtonsContainer.appendChild(btn);
                     });
-                } else {
-                    partsListContainer.innerHTML = `<div class="empty-message">No seasons or episodes found.</div>`;
-                }
+                } else { partsListContainer.innerHTML = `<div class="empty-message">No seasons or episodes found.</div>`; }
             }
 
             function loadParts(parts) {
@@ -460,22 +445,16 @@
                 partsListContainer.innerHTML = '';
                 const partKeys = Object.keys(parts).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
                 partKeys.forEach(partId => {
-                    const part = parts[partId];
-                    const item = document.createElement('div');
+                    const part = parts[partId]; const item = document.createElement('div');
                     item.className = 'part-item';
-                    item.innerHTML = `
-                       <img src="${part.posterUrl || 'https://via.placeholder.com/200x150'}" class="part-poster">
-                       <div class="part-title">${part.partName}</div>`;
-                    item.addEventListener('click', () => {
-                        if (part.megaLink) window.open(part.megaLink, '_blank');
-                    });
+                    item.innerHTML = `<img src="${part.posterUrl || 'https://via.placeholder.com/200x150'}" class="part-poster"><div class="part-title">${part.partName}</div>`;
+                    item.addEventListener('click', () => { if (part.megaLink) window.open(part.megaLink, '_blank'); });
                     partsListContainer.appendChild(item);
                 });
             }
 
              document.querySelectorAll('.search-button').forEach(searchButton => {
-                const searchBar = searchButton.previousElementSibling;
-                const page = searchButton.closest('.page');
+                const searchBar = searchButton.previousElementSibling; const page = searchButton.closest('.page');
                 const performSearch = () => {
                     const searchTerm = searchBar.value.toLowerCase().trim();
                     const pageId = page.id.replace('Page', '');
@@ -485,10 +464,7 @@
                     if (pageId === 'movie') allData = allMoviesData;
                     else if (pageId === 'webseries') allData = allWebseriesData;
                     else allData = allCartoonsData;
-                    if (searchTerm === '') {
-                        displayContentForCategory(pageId, selectedCategory, allData);
-                        return;
-                    }
+                    if (searchTerm === '') { displayContentForCategory(pageId, selectedCategory, allData); return; }
                     const searchResults = allData.filter(item => item.title && item.title.toLowerCase().includes(searchTerm));
                     displayContentForCategory(pageId, selectedCategory, searchResults);
                 };
