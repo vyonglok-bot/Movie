@@ -237,11 +237,10 @@
             };
             const mapGenres = (genreIds) => genreIds.map(id => genreMap[id]).find(g => g) || "Uncategorized";
 
-            // --- EXTERNAL DATA FETCHER ---
             async function fetchExternalContent(mediaType) {
                 const results = [];
                 const type = mediaType === 'movies' ? 'movie' : 'tv';
-                const totalPagesToFetch = 15; // 20 items per page = 300 items
+                const totalPagesToFetch = 15;
                 const requests = [];
 
                 for (let i = 1; i <= totalPagesToFetch; i++) {
@@ -250,7 +249,7 @@
                 }
 
                 const responses = await Promise.all(requests);
-                const titles = new Set(); // To avoid duplicates
+                const titles = new Set();
 
                 for (const data of responses) {
                     if (data.results) {
@@ -273,7 +272,6 @@
                 return results;
             }
 
-            // --- DATA LOADING LOGIC ---
             async function loadInitialData(pageId) {
                 const container = document.getElementById(`${pageId}-categories-container`);
                 const activeChip = document.querySelector(`#${pageId}Page .category-chip.active`);
@@ -293,38 +291,30 @@
                 try {
                     const firestorePromise = getDocs(collection(firestore, collectionName));
                     const externalPromise = mediaType !== 'cartoons' ? fetchExternalContent(mediaType) : Promise.resolve([]);
-
                     const [firestoreSnapshot, externalItems] = await Promise.all([firestorePromise, externalPromise]);
-
                     let firestoreItems = [];
                     firestoreSnapshot.forEach(doc => {
                         firestoreItems.push({ id: doc.id, fromFirestore: true, ...doc.data() });
                     });
-                    
                     const firestoreTitles = new Set(firestoreItems.map(item => item.title));
                     const uniqueExternalItems = externalItems.filter(extItem => !firestoreTitles.has(extItem.title));
-                    
                     const allItems = [...firestoreItems, ...uniqueExternalItems];
                     
                     if (mediaType === 'movies') allMoviesData = allItems;
                     else if (mediaType === 'webseries') allWebseriesData = allItems;
-                    else allCartoonsData = firestoreItems; // Cartoons only from Firestore for now
+                    else allCartoonsData = firestoreItems;
 
                     displayContentForCategory(pageId, selectedCategory, allItems);
-
                 } catch (error) {
                     console.error("Data Loading Error:", error);
                     container.innerHTML = `<div class="empty-message">Failed to load data. Please check your Firestore rules in Firebase Console.</div>`;
                 }
             }
             
-            // --- UI RENDERING LOGIC ---
             function displayContentForCategory(pageId, selectedCategory, allItems) {
                 const container = document.getElementById(`${pageId}-categories-container`);
                 container.innerHTML = '';
-                
                 const itemsInCategory = allItems.filter(item => item.category === selectedCategory);
-                
                 if (itemsInCategory.length > 0) {
                     const groupedByGenre = itemsInCategory.reduce((acc, item) => {
                         const genre = item.genre || 'Uncategorized';
@@ -332,7 +322,6 @@
                         acc[genre].push(item);
                         return acc;
                     }, {});
-                    
                     const genreOrder = [ "Action & Adventure", "Romantic Drama", "Comedy / Dark Comedy", "Thriller / Mystery", "Sci-Fi", "Horror / Supernatural", "Fantasy / Mythology", "Crime" ];
                     genreOrder.forEach(genre => {
                         if (groupedByGenre[genre]) {
@@ -356,18 +345,14 @@
                 categoryDiv.className = 'media-category';
                 categoryDiv.innerHTML = `<div class="category-header"><div class="category-title">${title}</div></div><div class="media-scroller"></div>`;
                 const scroller = categoryDiv.querySelector('.media-scroller');
-                
                 items.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'media-card';
                     card.dataset.type = mediaType;
                     card.dataset.id = item.id;
                     card.dataset.fromFirestore = item.fromFirestore || false;
-                    
-                    // Add link or TMDB ID based on source
                     if (item.megaLink) card.dataset.link = item.megaLink;
                     if (item.tmdbId) card.dataset.tmdbId = item.tmdbId;
-
                     card.innerHTML = `
                         <img src="${item.posterUrl}" alt="Poster" class="media-poster">
                         <div class="media-title">${item.title}</div>`;
@@ -389,7 +374,9 @@
                             window.open(megaLink, '_blank');
                         } else if (tmdbId) {
                             const urlType = type === 'movies' ? 'movie' : 'tv';
-                            window.open(`https://vidsrc.to/embed/${urlType}/${tmdbId}`, '_blank');
+                            // ########## THIS IS THE CORRECTED LINE ##########
+                            window.open(`https://vidsrc.me/embed/${urlType}?tmdb=${tmdbId}`, '_blank');
+                            // ###############################################
                         } else if (fromFirestore) {
                              try {
                                 const docRef = doc(firestore, type, id);
@@ -403,7 +390,6 @@
                 });
             }
             
-            // --- NAVIGATION LOGIC ---
             navItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -429,13 +415,11 @@
                         if(pageId === 'movie') dataToDisplay = allMoviesData;
                         else if(pageId === 'webseries') dataToDisplay = allWebseriesData;
                         else dataToDisplay = allCartoonsData;
-                        
                         displayContentForCategory(pageId, e.target.dataset.category, dataToDisplay);
                     }
                 });
             });
 
-            // --- DETAIL PAGE LOGIC ---
             detailPage.querySelector('.back-button').addEventListener('click', () => {
                 detailPage.classList.remove('active');
                 appContainer.style.display = 'block';
@@ -449,7 +433,6 @@
                 const partsListContainer = detailPage.querySelector('.parts-list');
                 seasonButtonsContainer.innerHTML = '';
                 partsListContainer.innerHTML = '';
-
                 if (data.seasons) {
                     const seasonKeys = Object.keys(data.seasons).sort((a,b) => parseInt(a) - parseInt(b));
                     seasonKeys.forEach((seasonNum, index) => {
@@ -490,36 +473,29 @@
                 });
             }
 
-            // --- SEARCH LOGIC ---
              document.querySelectorAll('.search-button').forEach(searchButton => {
                 const searchBar = searchButton.previousElementSibling;
                 const page = searchButton.closest('.page');
-
                 const performSearch = () => {
                     const searchTerm = searchBar.value.toLowerCase().trim();
                     const pageId = page.id.replace('Page', '');
                     const activeChip = page.querySelector('.category-chip.active');
                     const selectedCategory = activeChip ? activeChip.dataset.category : null;
-
                     let allData;
                     if (pageId === 'movie') allData = allMoviesData;
                     else if (pageId === 'webseries') allData = allWebseriesData;
                     else allData = allCartoonsData;
-
                     if (searchTerm === '') {
                         displayContentForCategory(pageId, selectedCategory, allData);
                         return;
                     }
-
                     const searchResults = allData.filter(item => item.title && item.title.toLowerCase().includes(searchTerm));
                     displayContentForCategory(pageId, selectedCategory, searchResults);
                 };
-                
                 searchBar.addEventListener('keyup', (event) => { if (event.key === 'Enter') performSearch(); });
                 searchButton.addEventListener('click', performSearch);
             });
 
-            // --- INITIAL LOAD ---
             loadInitialData('movie');
         });
     </script>
